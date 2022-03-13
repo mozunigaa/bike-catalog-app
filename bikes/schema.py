@@ -21,6 +21,7 @@ class BikeType(DjangoObjectType):
     class Meta:
         model = Bike
         fields = (
+            'id',
             'model',
             'year',
             'price',
@@ -29,10 +30,18 @@ class BikeType(DjangoObjectType):
         )
 
 class Query(graphene.ObjectType):
+    bikes = graphene.List(BikeType)
+    bike = graphene.Field(BikeType,id=graphene.Int())
 
-    all_bikes = graphene.List(BikeType)
+    def resolve_order(self, info, **kwargs):
+        id = kwargs.get('id')
 
-    def resolve_all_bikes(root,info):
+        if id is not None:
+            return Bike.objects.get(pk=id)
+
+        return None
+   
+    def resolve_bikes(self, info, **kwargs):
         return Bike.objects.all()
 
 schema = graphene.Schema(query=Query)
